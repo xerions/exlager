@@ -1,5 +1,13 @@
 [
   mappings: [
+    "log.journal.level": [
+      doc: """
+      Choose the logging level for the journal backend.
+      """,
+      to: "lager.handlers",
+      datatype: [enum: [:emerg, :alert, :crit, :err, :warning, :notive, :info, :debug, :false]],
+      default: :false
+    ],
     "log.console.level": [
       doc: """
       Choose the logging level for the console backend.
@@ -25,8 +33,18 @@
       default: "/var/log/console.log"
     ]
   ],
-
   translations: [
+    "log.journal.level": fn
+      _mapping, false, acc ->
+          (acc || [])
+      _mapping, level, nil when level in [:emerg, :alert, :crit, :err, :warning, :notive, :info, :debug] ->
+          [lager_journald_backend: level]
+      _mapping, level, acc when level in [:emerg, :alert, :crit, :err, :warning, :notive, :info, :debug] ->
+          acc ++ [lager_journald_backend: level]
+      _, level, _ ->
+        IO.puts("Unsupported journal logging level: #{level}")
+        exit(1)
+    end,
     "log.console.level": fn
       _mapping, false, acc ->
           (acc || [])
@@ -49,5 +67,4 @@
         acc ++ [lager_file_backend: [file: path, level: :info]]
     end
   ]
-
 ]
