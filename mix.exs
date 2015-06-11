@@ -16,13 +16,14 @@ defmodule Exlager.Mixfile do
         :compiler,
         :syntax_tools,
         :lager
-      ],
+      ]
     ]
   end
 
   defp deps do
     [
-      {:lager, git: "https://github.com/basho/lager.git"},
+      {:lager, "~> 2.1.1"},
+      {:exrm, "~> 0.16.0"},
     ]
   end
 end
