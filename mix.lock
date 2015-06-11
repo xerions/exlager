@@ -1,4 +1,0 @@
-%{"conform": {:hex, :conform, "0.13.0"},
-  "exrm": {:hex, :exrm, "0.16.0"},
-  "goldrush": {:hex, :goldrush, "0.1.6"},
-  "lager": {:hex, :lager, "2.1.1"}}

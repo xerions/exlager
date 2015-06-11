@@ -30,17 +30,15 @@
       """,
       to: "lager.handlers",
       datatype: :binary,
-      default: "/var/log/console.log"
+      default: "false"
     ]
   ],
   translations: [
     "log.journal.level": fn
       _mapping, false, acc ->
           (acc || [])
-      _mapping, level, nil when level in [:emerg, :alert, :crit, :err, :warning, :notive, :info, :debug] ->
-          [lager_journald_backend: level]
       _mapping, level, acc when level in [:emerg, :alert, :crit, :err, :warning, :notive, :info, :debug] ->
-          acc ++ [lager_journald_backend: level]
+          (acc || []) ++ [lager_journald_backend: level]
       _, level, _ ->
         IO.puts("Unsupported journal logging level: #{level}")
         exit(1)
@@ -57,18 +55,14 @@
     "log.file.error": fn
       _, "false", acc ->
         (acc || [])
-      _, path, nil ->
-        [lager_file_backend: [file: path, level: :error]]
       _, path, acc ->
-        acc ++ [lager_file_backend: [file: path, level: :error]]
+        (acc || []) ++ [lager_file_backend: [file: path, level: :error]]
     end,
     "log.file.info": fn
       _, "false", acc ->
         (acc || [])
-      _, path, nil ->
-        [lager_file_backend: [file: path, level: :info]]
       _, path, acc ->
-        acc ++ [lager_file_backend: [file: path, level: :info]]
+        (acc || []) ++ [lager_file_backend: [file: path, level: :info]]
     end
   ]
 ]
