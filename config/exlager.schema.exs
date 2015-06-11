@@ -30,6 +30,14 @@
       """,
       to: "lager.handlers",
       datatype: :binary,
+      default: "info.log"
+    ],
+    "log.file.crash": [
+      doc: """
+      Specify the path to the crash log for the file backend
+      """,
+      to: "lager.crash_log",
+      datatype: :binary,
       default: "false"
     ]
   ],
@@ -63,6 +71,10 @@
         (acc || [])
       _, path, acc ->
         (acc || []) ++ [lager_file_backend: [file: path, level: :info]]
+    end,
+    "log.file.crash": fn
+      _, "false" -> :undefined
+      _, path -> to_char_list(path)
     end
   ]
 ]
