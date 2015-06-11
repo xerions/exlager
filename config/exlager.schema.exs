@@ -38,7 +38,7 @@
       _mapping, false, acc ->
           (acc || [])
       _mapping, level, acc when level in [:emerg, :alert, :crit, :err, :warning, :notive, :info, :debug] ->
-          (acc || []) ++ [lager_journald_backend: level]
+          (acc || []) ++ [lager_journald_backend: [level: level]]
       _, level, _ ->
         IO.puts("Unsupported journal logging level: #{level}")
         exit(1)
