@@ -26,7 +26,7 @@
     ],
     "log.file.info": [
       doc: """
-      Specify the path to the console log for the file backend
+      Specify the path to the info log for the file backend
       """,
       to: "lager.handlers",
       datatype: :binary,
@@ -55,12 +55,16 @@
         exit(1)
     end,
     "log.file.error": fn
+      _, "false", acc ->
+        (acc || [])
       _, path, nil ->
         [lager_file_backend: [file: path, level: :error]]
       _, path, acc ->
         acc ++ [lager_file_backend: [file: path, level: :error]]
     end,
     "log.file.info": fn
+      _, "false", acc ->
+        (acc || [])
       _, path, nil ->
         [lager_file_backend: [file: path, level: :info]]
       _, path, acc ->
