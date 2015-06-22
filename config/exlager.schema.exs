@@ -21,7 +21,7 @@
       Specify the path to the error log for the file backend
       """,
       to: "lager.handlers",
-      datatype: :binary,
+      datatype: :list,
       default: "false"
     ],
     "log.file.info": [
@@ -29,7 +29,7 @@
       Specify the path to the info log for the file backend
       """,
       to: "lager.handlers",
-      datatype: :binary,
+      datatype: :list,
       default: "info.log"
     ],
     "log.file.crash": [
@@ -37,7 +37,7 @@
       Specify the path to the crash log for the file backend
       """,
       to: "lager.crash_log",
-      datatype: :binary,
+      datatype: :list,
       default: "false"
     ]
   ],
