@@ -26,10 +26,13 @@ defmodule Lager do
   quoted = for {level, _num} <- levels do
     quote do
       defmacro unquote(level)(message) do
-        log(unquote(level), '~s', [message], __CALLER__)
+        log(unquote(level), '~s', [message], [], __CALLER__)
       end
       defmacro unquote(level)(format, message) do
-        log(unquote(level), format, message, __CALLER__)
+        log(unquote(level), format, message, [], __CALLER__)
+      end
+      defmacro unquote(level)(format, message, meta) do
+        log(unquote(level), format, message, meta, __CALLER__)
       end
     end
   end
@@ -51,24 +54,40 @@ defmodule Lager do
   Module.eval_quoted __MODULE__, quoted, [], __ENV__
   defp num_to_level(_), do: nil
 
-  defp log(level, format, args, caller) do
+  defp log(level, format, args, meta, caller) do
     {name, _arity} = caller.function || {:unknown, 0}
     module = caller.module || :unknown
     if is_binary(format), do: format = String.to_char_list(format)
     if should_log(level) do
-      dispatch(level, module, name, caller.line, format, args)
+      dispatch(level, module, name, caller.line, format, args, meta)
     end
   end
 
-  defp dispatch(level, module, name, line, format, args) do
+  defp dispatch(level, module, name, line, format, args, meta) do
+    level_pot = level2pot(level)
     quote do
-      :lager.dispatch_log(unquote(level),
-        [module: unquote(module),
-         function: unquote(name),
-         line: unquote(line),
-         pid: self],
-        unquote(format), unquote(args), unquote(compile_truncation_size))
+      import Bitwise
+      case {Process.whereis(:lager_event), :lager_config.get(:loglevel, {0, []})} do
+        {:undefined, _} ->
+          {:error, :lager_not_running};
+        {pid, {level, traces}} when band(level, unquote(level_pot)) != 0 or traces != [] ->
+          :lager.do_log(unquote(level),
+                        [{:module, unquote(module)},
+                         {:function, unquote(name)},
+                         {:line, unquote(line)},
+                         {:pid, :erlang.pid_to_list(self)},
+                         {:node, node} | :lager.md] ++ unquote(meta),
+                        unquote(format), unquote(args), unquote(compile_truncation_size),
+                        unquote(level_pot), level, traces, pid)
+
+        _ -> :ok
+      end
     end
+  end
+
+  defp level2pot(level) do
+    import Bitwise
+    1 <<< level_to_num(level)
   end
 
   defp should_log(level), do: level_to_num(level) <= level_to_num(compile_log_level)
