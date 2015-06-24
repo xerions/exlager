@@ -99,7 +99,7 @@ defmodule Lager do
     :info
   """
   def compile_log_level() do
-    level = Application.get_env(:exlager, :level, :info)
+    level = Application.get_env(:exlager, :level, :debug)
     if is_integer(level) do
       level = num_to_level(level)
       IO.puts "Using integers is deprecated, please use :#{level} instead"
@@ -109,11 +109,11 @@ defmodule Lager do
 
   @doc """
   This function is used to set compile time log level.
-  By default the log level is 'info'.
+  By default the log level is 'debug'.
   Examples:
-    iex(4)> Lager.compile_log_level(6)
+    iex(4)> Lager.compile_log_level(7)
     true
-    iex(4)> Lager.compile_log_level(:info)
+    iex(4)> Lager.compile_log_level(:debug)
     true
   """
   def compile_log_level(level) when level in -1..7 do
