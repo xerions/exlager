@@ -72,10 +72,11 @@ defmodule Lager do
           {:error, :lager_not_running};
         {pid, {level, traces}} when band(level, unquote(level_pot)) != 0 or traces != [] ->
           :lager.do_log(unquote(level),
-                        [{:module, unquote(module)},
+                        [{:application, unquote(Application.get_env(:logger, :compile_time_application))},
+                         {:module, unquote(module)},
                          {:function, unquote(name)},
                          {:line, unquote(line)},
-                         {:pid, :erlang.pid_to_list(self)},
+                         {:pid, self},
                          {:node, node} | :lager.md] ++ unquote(meta),
                         unquote(format), unquote(args), unquote(compile_truncation_size),
                         unquote(level_pot), level, traces, pid)
