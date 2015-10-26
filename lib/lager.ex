@@ -68,7 +68,7 @@ defmodule Lager do
     quote do
       import Bitwise
       case {Process.whereis(:lager_event), :lager_config.get(:loglevel, {0, []})} do
-        {:undefined, _} ->
+        {nil, _} ->
           {:error, :lager_not_running};
         {pid, {level, traces}} when band(level, unquote(level_pot)) != 0 or traces != [] ->
           :lager.do_log(unquote(level),
