@@ -77,7 +77,7 @@ defmodule Lager do
                          {:function, unquote(name)},
                          {:line, unquote(line)},
                          {:pid, self},
-                         {:node, node} | :lager.md] ++ unquote(meta),
+                         {:node, node} | :lager.md] |> Dict.merge(unquote(meta)),
                         unquote(format), unquote(args), unquote(compile_truncation_size),
                         unquote(level_pot), level, traces, pid)
 
