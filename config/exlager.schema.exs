@@ -86,8 +86,8 @@
                     []
                 end
       console = case Conform.Conf.get(table, "lager.handlers.console.level") do
-                  [{_, level}] ->
-                    if level in [:info, :error] when is_atom(level) and level != false do
+                  [{_, level}] when is_atom(level) and level != false ->
+                    if level in [:info, :error] do
                       [lager_console_backend: [level: level]]
                     else
                       IO.puts("Unsupported console logging level: #{level}")
