@@ -22,7 +22,7 @@ defmodule Exlager.Mixfile do
 
   defp deps do
     [
-      {:lager, "~> 2.1.1"}
+      {:lager, "~> 3.2.1"}
     ]
   end
 end
