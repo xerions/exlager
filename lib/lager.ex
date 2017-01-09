@@ -78,7 +78,7 @@ defmodule Lager do
                          {:line, unquote(line)},
                          {:pid, self},
                          {:node, node} | :lager.md] |> Dict.merge(unquote(meta)),
-                        unquote(format), unquote(args), unquote(compile_truncation_size),
+                        unquote(format), unquote(args), unquote(compile_truncation_size()),
                         unquote(level_pot), level, traces, pid)
 
         _ -> :ok
@@ -91,7 +91,7 @@ defmodule Lager do
     1 <<< level_to_num(level)
   end
 
-  defp should_log(level), do: level_to_num(level) <= level_to_num(compile_log_level)
+  defp should_log(level), do: level_to_num(level) <= level_to_num(compile_log_level())
 
   @doc """
   This function is used to get compile time log level.

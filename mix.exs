@@ -5,8 +5,8 @@ defmodule Exlager.Mixfile do
     [
       app: :exlager,
       version: "0.14.0",
-      elixir: "> 0.14.0",
-      deps: deps
+      elixir: "~> 1.2",
+      deps: deps()
     ]
   end
 
