@@ -132,6 +132,10 @@
                       []
                     [{_, host}] ->
                       if gelf != [] do
+                        host = case :inet.getaddr(String.to_charlist(host), :inet6) do
+                                 {:ok, host} -> host
+                                 _  -> :inet.getaddr(String.to_charlist(host), :inet) |> elem(1)
+                               end
                         [lager_udp_backend: data] = gelf
                         [lager_udp_backend: data ++ [{:host, host}]]
                       else
