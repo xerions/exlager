@@ -24,24 +24,24 @@ defmodule Lager do
   quoted = for {level, _num} <- levels do
     quote do
       defmacro unquote(level)(message) do
-        log(unquote(level), '~s', [message], [], __CALLER__)
+        log(unquote(level), '~s', [message], Macro.escape(%{}), __CALLER__)
       end
       defmacro unquote(level)(format, message) do
-        log(unquote(level), format, message, [], __CALLER__)
+        log(unquote(level), format, message, Macro.escape(%{}), __CALLER__)
       end
       defmacro unquote(level)(format, message, meta) do
         log(unquote(level), format, message, meta, __CALLER__)
       end
     end
   end
-  Module.eval_quoted __MODULE__, quoted, [], __ENV__
+  Module.eval_quoted(__MODULE__, quoted, [], __ENV__)
 
   quoted = for {level, num} <- levels do
     quote do
       defp level_to_num(unquote(level)), do: unquote(num)
     end
   end
-  Module.eval_quoted __MODULE__, quoted, [], __ENV__
+  Module.eval_quoted(__MODULE__, quoted, [], __ENV__)
   defp level_to_num(_), do: nil
 
   quoted = for {level, num} <- levels do
@@ -49,7 +49,7 @@ defmodule Lager do
       defp num_to_level(unquote(num)), do:  unquote(level)
     end
   end
-  Module.eval_quoted __MODULE__, quoted, [], __ENV__
+  Module.eval_quoted(__MODULE__, quoted, [], __ENV__)
   defp num_to_level(_), do: nil
 
   defp log(level, format, args, meta, caller) do
@@ -72,15 +72,24 @@ defmodule Lager do
           {:error, :lager_not_running};
         {pid, {level, traces}} when band(level, unquote(level_pot)) != 0 or traces != [] ->
           :lager.do_log(unquote(level),
-                        [{:application, unquote(Application.get_env(:logger, :compile_time_application))},
-                         {:module, unquote(module)},
-                         {:function, unquote(name)},
-                         {:line, unquote(line)},
-                         {:pid, self},
-                         {:node, node} | :lager.md] |> Dict.merge(unquote(meta)),
-                        unquote(format), unquote(args), unquote(compile_truncation_size()),
-                        unquote(level_pot), level, traces, pid)
-
+                        Map.to_list(Map.merge(%{
+                            :application  => unquote(Application.get_env(:logger, :compile_time_application)),
+                            :module       => unquote(module),
+                            :function     => unquote(name),
+                            :line         => unquote(line),
+                            :pid          => self(),
+                            :node         => node()
+                          }, 
+                          unquote(meta))
+                        ),
+                        unquote(format),
+                        unquote(args),
+                        unquote(compile_truncation_size()),
+                        unquote(level_pot), 
+                        level,
+                        traces,
+                        pid
+          )
         _ -> :ok
       end
     end
