@@ -71,6 +71,7 @@ defmodule Lager do
         {nil, _} ->
           {:error, :lager_not_running};
         {pid, {level, traces}} when band(level, unquote(level_pot)) != 0 or traces != [] ->
+          md = :lager.md() |> Map.new
           :lager.do_log(unquote(level),
                         Map.to_list(Map.merge(%{
                             :application  => unquote(Application.get_env(:logger, :compile_time_application)),
@@ -79,13 +80,14 @@ defmodule Lager do
                             :line         => unquote(line),
                             :pid          => self(),
                             :node         => node()
-                          }, 
+                          },
                           unquote(meta))
+                          |> Map.merge(md)
                         ),
                         unquote(format),
                         unquote(args),
                         unquote(compile_truncation_size()),
-                        unquote(level_pot), 
+                        unquote(level_pot),
                         level,
                         traces,
                         pid
