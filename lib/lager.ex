@@ -9,25 +9,28 @@ defmodule Lager do
   defdelegate get_loglevel(handler), to: :lager
   defdelegate posix_error(error), to: :lager
 
+  import Bitwise
+
   levels = [
-    debug:      7,
-    info:       6,
-    notice:     5,
-    warning:    4,
-    error:      3,
-    critical:   2,
-    alert:      1,
-    emergency:  0,
-    none:      -1
+    # name:     {level, pot} 
+    debug:      {7,  128},
+    info:       {6,  64},
+    notice:     {5,  32},
+    warning:    {4,  16},
+    error:      {3,  8},
+    critical:   {2,  4},
+    alert:      {1,  2},
+    emergency:  {0,  1},
+    none:       {-1, 0}
   ]
 
   quoted = for {level, _num} <- levels do
     quote do
       defmacro unquote(level)(message) do
-        log(unquote(level), '~s', [message], Macro.escape(%{}), __CALLER__)
+        log(unquote(level), '~s', [message], [], __CALLER__)
       end
       defmacro unquote(level)(format, message) do
-        log(unquote(level), format, message, Macro.escape(%{}), __CALLER__)
+        log(unquote(level), format, message, [], __CALLER__)
       end
       defmacro unquote(level)(format, message, meta) do
         log(unquote(level), format, message, meta, __CALLER__)
@@ -36,7 +39,7 @@ defmodule Lager do
   end
   Module.eval_quoted(__MODULE__, quoted, [], __ENV__)
 
-  quoted = for {level, num} <- levels do
+  quoted = for {level, {num, _}} <- levels do
     quote do
       defp level_to_num(unquote(level)), do: unquote(num)
     end
@@ -44,13 +47,21 @@ defmodule Lager do
   Module.eval_quoted(__MODULE__, quoted, [], __ENV__)
   defp level_to_num(_), do: nil
 
-  quoted = for {level, num} <- levels do
+  quoted = for {level, {num, _}} <- levels do
     quote do
       defp num_to_level(unquote(num)), do:  unquote(level)
     end
   end
   Module.eval_quoted(__MODULE__, quoted, [], __ENV__)
   defp num_to_level(_), do: nil
+
+  quoted = for {level, {_, pot}} <- levels do
+    quote do
+      defp level2pot(unquote(level)), do:  unquote(pot)
+    end
+  end
+  Module.eval_quoted(__MODULE__, quoted, [], __ENV__)
+  defp level2pot(_), do: -1
 
   defp log(level, format, args, meta, caller) do
     {name, _arity} = caller.function || {:unknown, 0}
@@ -66,24 +77,21 @@ defmodule Lager do
   defp dispatch(level, module, name, line, format, args, meta) do
     level_pot = level2pot(level)
     quote do
-      import Bitwise
       case {Process.whereis(:lager_event), :lager_config.get(:loglevel, {0, []})} do
         {nil, _} ->
           {:error, :lager_not_running};
         {pid, {level, traces}} when band(level, unquote(level_pot)) != 0 or traces != [] ->
-          md = :lager.md() |> Map.new
+          meta =
+            Enum.into(unquote(meta), 
+                      [{:application, unquote(Application.get_env(:logger, :compile_time_application))},
+                       {:module,      unquote(module)},
+                       {:function,    unquote(name)},
+                       {:line,        unquote(line)},
+                       {:pid,         self()},
+                       {:node,        node()}
+                      | :lager.md()])
           :lager.do_log(unquote(level),
-                        Map.to_list(Map.merge(%{
-                            :application  => unquote(Application.get_env(:logger, :compile_time_application)),
-                            :module       => unquote(module),
-                            :function     => unquote(name),
-                            :line         => unquote(line),
-                            :pid          => self(),
-                            :node         => node()
-                          },
-                          unquote(meta))
-                          |> Map.merge(md)
-                        ),
+                        meta,
                         unquote(format),
                         unquote(args),
                         unquote(compile_truncation_size()),
@@ -95,11 +103,6 @@ defmodule Lager do
         _ -> :ok
       end
     end
-  end
-
-  defp level2pot(level) do
-    import Bitwise
-    1 <<< level_to_num(level)
   end
 
   defp should_log(level), do: level_to_num(level) <= level_to_num(compile_log_level())

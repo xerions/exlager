@@ -104,9 +104,9 @@ defmodule ExLager.Test do
       quote do
         require Lager
         [
-         debug: Lager.debug("Hi debug"),
-         info: Lager.info("Hi info"),
-         notice: Lager.notice("Hi notice"),
+         debug: Lager.debug("Hi debug", [], [a: 1]),
+         info: Lager.info("Hi info", [], %{a: 1}),
+         notice: Lager.notice("Hi notice", [], %{"a" => 1}),
          warning: Lager.warning("Hi warning"),
          error: Lager.error("Hi error"),
          critical: Lager.critical("Hi critical"),
