@@ -24,21 +24,14 @@
       datatype: [enum: [:emerg, :alert, :crit, :error, :warning, :notive, :info, :debug, :false]],
       default: :false
     ],
-    "log.gelf.host": [
+    "log.gelf.url": [
       doc: """
       Hostname of the graylog server to forward log messages to.
+      # Scheme: <host>[:<port>]
       """,
-      to: "lager.handlers.gelf.host",
+      to: "lager.handlers.gelf.url",
       datatype: :binary,
       default: ""
-    ],
-    "log.gelf.port": [
-      doc: """
-      Port of the graylog server to forward log messages to.
-      """,
-      to: "lager.handlers.gelf.port",
-      datatype: :integer,
-      default: 0
     ],
     "log.file.error": [
       doc: """
@@ -127,28 +120,23 @@
                _ ->
                  []
              end
-      gelf_host = case Conform.Conf.get(table, "lager.handlers.gelf.host") do
+      gelf_host = case Conform.Conf.get(table, "lager.handlers.gelf.url") do
                     [{_, ""}] ->
                       []
                     [{_, host}] ->
                       if gelf != [] do
+                        {host, port} = case String.split(host, ":", parts: 2) do
+                                         [host, port] ->
+                                           {host, String.to_integer(port)}
+                                         _ ->
+                                           {host, 12201}
+                                       end
                         host = case :inet.getaddr(String.to_charlist(host), :inet6) do
                                  {:ok, host} -> host
                                  _  -> :inet.getaddr(String.to_charlist(host), :inet) |> elem(1)
                                end
                         [lager_udp_backend: data] = gelf
-                        [lager_udp_backend: data ++ [{:host, host}]]
-                      else
-                        []
-                      end
-                  end
-      gelf_port = case Conform.Conf.get(table, "lager.handlers.gelf.port") do
-                    [{_, 0}] ->
-                      []
-                    [{_, port}] ->
-                      if gelf_host != [] do
-                        [lager_udp_backend: data] = gelf_host
-                        [lager_udp_backend: data ++ [{:port, port}]]
+                        [lager_udp_backend: data ++ [{:host, host}, {:port, port}]]
                       else
                         []
                       end
@@ -170,12 +158,11 @@
       # TODO delete it with match
       :ets.delete(table, ['lager', 'handlers', 'file', 'info'])
       :ets.delete(table, ['lager', 'handlers', 'file', 'error'])
-      :ets.delete(table, ['lager', 'handlers', 'gelf', 'host'])
-      :ets.delete(table, ['lager', 'handlers', 'gelf', 'port'])
+      :ets.delete(table, ['lager', 'handlers', 'gelf', 'url'])
       :ets.delete(table, ['lager', 'handlers', 'gelf', 'level'])
       :ets.delete(table, ['lager', 'handlers', 'file', 'level'])
       :ets.delete(table, ['lager', 'handlers', 'journal', 'level'])
-      journal ++ console ++ gelf_port ++ file_error ++ file_info
+      journal ++ console ++ gelf_host ++ file_error ++ file_info
   end,
   "lager.crash_log": fn table ->
     crash_log = Conform.Conf.get(table, "lager.crash_log")
