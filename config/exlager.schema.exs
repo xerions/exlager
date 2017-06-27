@@ -8,6 +8,15 @@
       datatype: [enum: [:emerg, :alert, :crit, :error, :warning, :notive, :info, :debug, :false]],
       default: :false
     ],
+    "log.journal.global_meta": [
+      doc: """
+      Global persistent meta. Should contain attributes in form:
+      name1:value,name2:value
+      """,
+      to: "lager.handlers.journal.global_attributes",
+      datatype: :binary,
+      default: ""
+    ],
     "log.console.level": [
       doc: """
       Choose the logging level for the console backend.
@@ -67,10 +76,25 @@
   transforms: [
     "lager.handlers": fn table ->
       lager = Conform.Conf.get(table, "lager")
+      journal_global_attributes = case Conform.Conf.get(table, "lager.handlers.journal.global_attributes") do
+                                    [{_, ""}] ->
+                                      []
+                                    [{_, attrs}] ->
+                                      attributes = String.split(attrs, ",")
+                                      Enum.map(attributes, fn (attr) ->
+                                        case String.split(attr, ":", [parts: 2]) do
+                                          [attr_name, attr_value] ->
+                                            {attr_name, attr_value};
+                                          _ ->
+                                            IO.puts("Unsupported journal gkibak_attributes format: #{attrs}")
+                                            exit(1)
+                                      end
+                                    end)
+                                  end
       journal = case Conform.Conf.get(table, "lager.handlers.journal.level") do
                   [{_, level}] when is_atom(level) and level != false ->
                     if level in [:emerg, :alert, :crit, :error, :warning, :notive, :info, :debug] do
-                      [lager_journald_backend: [level: level]]
+                      [lager_journald_backend: [level: level, global_attributes: journal_global_attributes]]
                     else
                       IO.puts("Unsupported journal logging level: #{level}")
                       exit(1)
@@ -162,6 +186,7 @@
       :ets.delete(table, ['lager', 'handlers', 'gelf', 'level'])
       :ets.delete(table, ['lager', 'handlers', 'file', 'level'])
       :ets.delete(table, ['lager', 'handlers', 'journal', 'level'])
+      :ets.delete(table, ['lager', 'handlers', 'journal', 'global_attributes'])
       journal ++ console ++ gelf_host ++ file_error ++ file_info
   end,
   "lager.crash_log": fn table ->
