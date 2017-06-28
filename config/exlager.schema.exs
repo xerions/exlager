@@ -86,7 +86,7 @@
                                           [attr_name, attr_value] ->
                                             {attr_name, attr_value};
                                           _ ->
-                                            IO.puts("Unsupported journal gkibak_attributes format: #{attrs}")
+                                            IO.puts("Unsupported journal global_attributes format: #{attrs}")
                                             exit(1)
                                       end
                                     end)
