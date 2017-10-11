@@ -169,13 +169,13 @@
                     [{_, 'false'}] ->
                        []
                     [{_, path}] ->
-                       [lager_file_backend: [file: path |> to_char_list, level: :error]]
+                       [lager_file_backend: [file: path |> to_charlist, level: :error]]
                    end
       file_info = case Conform.Conf.get(table, "lager.handlers.file.info") do
                     [{_, 'false'}] ->
                       []
                     [{_, path}] ->
-                      [lager_file_backend: [file: path |> to_char_list, level: :info]]
+                      [lager_file_backend: [file: path |> to_charlist, level: :info]]
                   end
       # Delete extra fields from the mappings, we no need in it
       # anymore. In other way we will see it in sys.config
