@@ -67,7 +67,7 @@ defmodule Lager do
     {name, _arity} = caller.function || {:unknown, 0}
     module = caller.module || :unknown
     format = if is_binary(format), 
-             do: String.to_char_list(format),
+             do: String.to_charlist(format),
              else: format
     if should_log(level) do
       dispatch(level, module, name, caller.line, format, args, meta)
