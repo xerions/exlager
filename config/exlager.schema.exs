@@ -22,7 +22,7 @@
       Choose the logging level for the console backend.
       """,
       to: "lager.handlers.console.level",
-      datatype: [enum: [:info, :error, :false]],
+      datatype: [enum: [:emerg, :alert, :crit, :error, :warning, :notive, :info, :debug, :false]],
       default: :info
     ],
     "log.gelf.level": [
