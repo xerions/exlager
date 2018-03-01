@@ -5,7 +5,7 @@
       Choose the logging level for the journal backend.
       """,
       to: "lager.handlers.journal.level",
-      datatype: [enum: [:emerg, :alert, :crit, :error, :warning, :notice, :info, :debug, :false]],
+      datatype: [enum: [:emergency, :alert, :critical, :error, :warning, :notice, :info, :debug, :false]],
       default: :false
     ],
     "log.journal.global_meta": [
@@ -22,7 +22,7 @@
       Choose the logging level for the console backend.
       """,
       to: "lager.handlers.console.level",
-      datatype: [enum: [:emerg, :alert, :crit, :error, :warning, :notice, :info, :debug, :false]],
+      datatype: [enum: [:emergency, :alert, :critical, :error, :warning, :notice, :info, :debug, :false]],
       default: :info
     ],
     "log.gelf.level": [
@@ -30,7 +30,7 @@
       Choose the logging level for the graylog backend.
       """,
       to: "lager.handlers.gelf.level",
-      datatype: [enum: [:emerg, :alert, :crit, :error, :warning, :notice, :info, :debug, :false]],
+      datatype: [enum: [:emergency, :alert, :critical, :error, :warning, :notice, :info, :debug, :false]],
       default: :false
     ],
     "log.gelf.url": [
@@ -93,7 +93,7 @@
                                   end
       journal = case Conform.Conf.get(table, "lager.handlers.journal.level") do
                   [{_, level}] when is_atom(level) and level != false ->
-                    if level in [:emerg, :alert, :crit, :error, :warning, :notice, :info, :debug] do
+                    if level in [:emergency, :alert, :critical, :error, :warning, :notice, :info, :debug] do
                       [lager_journald_backend: [level: level, global_attributes: journal_global_attributes]]
                     else
                       IO.puts("Unsupported journal logging level: #{level}")
@@ -104,7 +104,7 @@
                 end
       console = case Conform.Conf.get(table, "lager.handlers.console.level") do
                   [{_, level}] when is_atom(level) and level != false ->
-                    if level in [:info, :error] do
+                    if level in [:emergency, :alert, :critical, :error, :warning, :notice, :info, :debug] do
                       [lager_console_backend: level]
                     else
                       IO.puts("Unsupported console logging level: #{level}")
@@ -115,7 +115,7 @@
                 end
       gelf = case Conform.Conf.get(table, "lager.handlers.gelf.level") do
                [{_, level}] when is_atom(level) and level != false ->
-                 if level in [:emerg, :alert, :crit, :error, :warning, :notice, :info, :debug] do
+                 if level in [:emergency, :alert, :critical, :error, :warning, :notice, :info, :debug] do
                    backends = case lager do
                                 [] ->
                                   []
