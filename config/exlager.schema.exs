@@ -71,6 +71,14 @@
       """,
       to: "lager.handlers",
       default: []
+    ],
+    "lager.traces.$handler.$level": [
+      doc: """
+      Activate lager tracing for specific modules
+      """,
+      to: "lager.traces.$handler.$level",
+      datatype: [list: :atom],
+      default: []
     ]
   ],
   transforms: [
@@ -202,5 +210,18 @@
         path
     end
   end,
-  ]
+
+  "lager.traces": fn table ->
+    traces = Conform.Conf.get(table, "lager.traces.$handler.$level")
+
+    Enum.flat_map(traces, fn({[_, _, backend, level], modules}) ->
+      for m <- modules, do: { backend |> to_string |> String.to_atom,
+                              [module: m ],
+                              level |> to_string |> String.to_atom
+                            }
+    end)
+  end,
+
+  ],
+
 ]
