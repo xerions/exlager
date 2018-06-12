@@ -1,4 +1,3 @@
 _build/
 deps/
 rel/
-mix.lock
