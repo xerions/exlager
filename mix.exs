@@ -22,7 +22,8 @@ defmodule Exlager.Mixfile do
 
   defp deps do
     [
-      {:lager, "~> 3.6.3"}
+      {:lager,   "~> 3.6.3"},
+      {:poison,  "~> 3.1"}
     ]
   end
 end

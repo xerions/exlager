@@ -25,6 +25,14 @@
       datatype: [enum: [:emergency, :alert, :critical, :error, :warning, :notice, :info, :debug, :false]],
       default: :info
     ],
+    "log.console.format": [
+      doc: """
+      Choose the format for console logging.
+      """,
+      to: "lager.handlers.console.format",
+      datatype: [enum: [:default, :json]],
+      default: :default
+    ],
     "log.gelf.level": [
       doc: """
       Choose the logging level for the graylog backend.
@@ -110,10 +118,10 @@
                   _ ->
                     []
                 end
-      console = case Conform.Conf.get(table, "lager.handlers.console.level") do
+      console_level = case Conform.Conf.get(table, "lager.handlers.console.level") do
                   [{_, level}] when is_atom(level) and level != false ->
                     if level in [:emergency, :alert, :critical, :error, :warning, :notice, :info, :debug] do
-                      [lager_console_backend: level]
+                      [level: level]
                     else
                       IO.puts("Unsupported console logging level: #{level}")
                       exit(1)
@@ -121,6 +129,22 @@
                   _ ->
                     []
                 end
+      console_format = case Conform.Conf.get(table, "lager.handlers.console.format") do
+                  [{_, format}] when is_atom(format) and format != false ->
+                    if format in [:default, :json] do
+                      formatter = case format do
+                        :default -> :lager_default_formatter
+                        :json -> Lager.JsonFormatter
+                      end
+                      [formatter: formatter]
+                    else
+                      IO.puts("Unsupported format for console logging: #{format}")
+                      exit(1)
+                    end
+                  _ ->
+                    []
+                end
+      console = [lager_console_backend: console_level ++ console_format]
       gelf = case Conform.Conf.get(table, "lager.handlers.gelf.level") do
                [{_, level}] when is_atom(level) and level != false ->
                  if level in [:emergency, :alert, :critical, :error, :warning, :notice, :info, :debug] do
@@ -194,6 +218,8 @@
       :ets.delete(table, ['lager', 'handlers', 'gelf', 'level'])
       :ets.delete(table, ['lager', 'handlers', 'file', 'level'])
       :ets.delete(table, ['lager', 'handlers', 'journal', 'level'])
+      :ets.delete(table, ['lager', 'handlers', 'console', 'level'])
+      :ets.delete(table, ['lager', 'handlers', 'console', 'format'])
       :ets.delete(table, ['lager', 'handlers', 'journal', 'global_attributes'])
       journal ++ console ++ gelf_host ++ file_error ++ file_info
   end,
