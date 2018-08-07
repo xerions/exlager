@@ -225,7 +225,6 @@
   end,
   "lager.crash_log": fn table ->
     crash_log = Conform.Conf.get(table, "lager.crash_log")
-    [{_, opts}] = Conform.Conf.get(table, "lager.handlers")
     :ets.delete(table, ['lager', 'crash_log'])
     case crash_log do
       [] ->
