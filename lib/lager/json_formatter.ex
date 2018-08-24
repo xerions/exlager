@@ -26,6 +26,8 @@ defmodule Lager.JsonFormatter do
     do: for {k, v} <- map, into: %{}, do: {k, to_str(v)}
   defp to_str([{key, _}|_] = keyword) when is_atom(key), 
     do: Map.new(keyword) |> to_str()
+  defp to_str(tuple) when is_tuple(tuple),
+    do: tuple |> Tuple.to_list() |> Enum.map(&to_str/1)
   defp to_str(value), do: to_string(value)
 
   defp get_data(value, _) when is_list(value) or is_binary(value), do: value
