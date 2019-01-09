@@ -24,10 +24,13 @@ defmodule Lager.JsonFormatter do
   defp to_str(int) when is_integer(int), do: int
   defp to_str(map) when is_map(map), 
     do: for {k, v} <- map, into: %{}, do: {k, to_str(v)}
-  defp to_str([{key, _}|_] = keyword) when is_atom(key), 
-    do: Map.new(keyword) |> to_str()
   defp to_str(tuple) when is_tuple(tuple),
     do: tuple |> Tuple.to_list() |> Enum.map(&to_str/1)
+  defp to_str([{key, _}|_] = keyword) when is_atom(key), 
+    do: Map.new(keyword) |> to_str()
+  defp to_str([data | _rest] = list) when is_map(data) do
+    Enum.map(list, fn (map) -> to_str(map) end)
+  end
   defp to_str(value), do: to_string(value)
 
   defp get_data(value, _) when is_list(value) or is_binary(value), do: value
