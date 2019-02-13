@@ -33,8 +33,6 @@ defmodule Lager.JsonFormatter do
   end
   defp to_str(value), do: to_string(value)
 
-  defp get_data(value, _) when is_list(value) or is_binary(value), do: value
-
   defp get_data(:message, message), do: LagerMsg.message(message) 
 
   defp get_data(:timestamp, message), do:
@@ -43,15 +41,15 @@ defmodule Lager.JsonFormatter do
 
   defp get_data(:severity, message), do: LagerMsg.severity(message) 
 
-  defp get_data(metadata, message) when is_atom(metadata), do: 
+  defp get_data(metadata, message) when is_atom(metadata) or is_list(metadata) or is_binary(metadata), do: 
     get_data({metadata, "undefined"}, message)
 
   defp get_data({metadata, absent}, message) do
     md = LagerMsg.metadata(message)
-    case Keyword.get(md, metadata) do
+    case List.keyfind(md, metadata, 0) do
       nil -> absent
-      value when is_pid(value) -> :erlang.pid_to_list(value)
-      value -> value
+      {_, value} when is_pid(value) -> :erlang.pid_to_list(value)
+      {_, value} -> value
     end
   end
 

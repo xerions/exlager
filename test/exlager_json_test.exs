@@ -43,6 +43,14 @@ defmodule ExLager.JsonTest do
     Lager.info("Another message with deep nested data", [], meta)
   end
 
+  test "allow binaries in meta keys" do
+    meta = [
+      {"a", 1},
+      {"b", 2}
+    ]
+    Lager.info("Another message with deep nested data", [], meta)
+  end
+  
   setup do
     Application.stop(:lager)
     Application.load(:lager)
