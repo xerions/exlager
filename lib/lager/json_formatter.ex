@@ -13,6 +13,11 @@ defmodule Lager.JsonFormatter do
         {_key, default} -> default
         key -> key
       end
+      value = if is_binary(value) do
+                for <<c <- value>>, into: <<>>, do: <<c::utf8>>
+              else
+                value
+              end
       Map.put(acc, key, value)
     end) 
     "#{Poison.encode!(map)}" <> "\n"
