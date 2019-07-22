@@ -81,15 +81,13 @@ defmodule Lager do
         {nil, _} ->
           {:error, :lager_not_running};
         {pid, {level, traces}} when band(level, unquote(level_pot)) != 0 or traces != [] ->
-          meta =
-            Enum.into(unquote(meta), 
-                      [{:application, unquote(Application.get_env(:logger, :compile_time_application))},
+          meta = Enum.into(unquote(meta), []) ++ [{:application, unquote(Application.get_env(:logger, :compile_time_application))},
                        {:module,      unquote(module)},
                        {:function,    unquote(name)},
                        {:line,        unquote(line)},
                        {:pid,         self()},
                        {:node,        node()}
-                      | :lager.md()])
+                       | :lager.md()]
           :lager.do_log(unquote(level),
                         meta,
                         unquote(format),
