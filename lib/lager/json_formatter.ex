@@ -36,6 +36,8 @@ defmodule Lager.JsonFormatter do
   defp to_str([data | _rest] = list) when is_map(data) do
     Enum.map(list, fn (map) -> to_str(map) end)
   end
+  defp to_str(list = [a |_]) when is_atom(a),
+    do: list |> Enum.map(&to_str/1)
   defp to_str(value), do: to_string(value)
 
   defp get_data(:message, message), do: LagerMsg.message(message) 
